@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Arquivo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+
+    <script>
+        // COLAR SUA URL AQUI (SEM A BARRA DO FINAL)
+        const API_URL = "https://sistema-arquivos-api.onrender.com"; 
+    </script>
+
+    <div class="container mx-auto p-4 max-w-5xl">
+        
+        <header class="mb-8 flex justify-between items-center bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-600">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-700">Sistema de Arquivo & Eliminação</h1>
+                <p class="text-gray-500 text-sm">Controle de Planilhas e Fluxo Operacional</p>
+            </div>
+            <div id="statusServer" class="text-xs font-mono bg-gray-200 px-2 py-1 rounded text-gray-500">
+                Verificando conexão...
+            </div>
+        </header>
+
+        <div class="flex space-x-4 mb-6">
+            <button onclick="showTab('planilhas')" id="btn-planilhas" class="flex-1 py-3 bg-blue-600 text-white rounded shadow font-semibold hover:bg-blue-700 transition">
+                <i class="fa-solid fa-file-word mr-2"></i> Controle de Planilhas
+            </button>
+            <button onclick="showTab('processos')" id="btn-processos" class="flex-1 py-3 bg-white text-gray-600 rounded shadow font-semibold hover:bg-gray-50 transition">
+                <i class="fa-solid fa-boxes-stacked mr-2"></i> Processos de Eliminação
+            </button>
+        </div>
+
+        <div id="tab-planilhas" class="space-y-6">
+            <div class="bg-white p-6 rounded shadow">
+                <h2 class="text-lg font-bold mb-4 border-b pb-2">Nova Planilha</h2>
+                <form id="formPlanilha" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700">Título / Identificação</label>
+                        <input type="text" id="p_title" required class="mt-1 block w-full border border-gray-300 rounded p-2" placeholder="Ex: Remessa RH 2024">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Tipo</label>
+                        <select id="p_type" class="mt-1 block w-full border border-gray-300 rounded p-2">
+                            <option value="eliminacao">Eliminação</option>
+                            <option value="remessa">Remessa (Guarda)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="bg-green-600 text-white p-2 rounded hover:bg-green-700 font-medium">
+                        + Criar Planilha
+                    </button>
+                </form>
+            </div>
+
+            <div class="bg-white p-6 rounded shadow overflow-hidden">
+                <h2 class="text-lg font-bold mb-4">Planilhas Registradas</h2>
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="listaPlanilhas" class="bg-white divide-y divide-gray-200">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="tab-processos" class="hidden space-y-6">
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-1 space-y-6">
+                    <div class="bg-white p-5 rounded shadow">
+                        <h3 class="font-bold text-gray-700 mb-3">Novo Processo</h3>
+                        <form id="formProcesso" class="space-y-3">
+                            <input type="text" id="proc_diary" placeholder="Nº Diário Oficial" required class="w-full border p-2 rounded">
+                            <input type="number" id="proc_boxes" placeholder="Total de Caixas" required class="w-full border p-2 rounded">
+                            <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Iniciar Processo</button>
+                        </form>
+                    </div>
+
+                    <div class="bg-white p-0 rounded shadow overflow-hidden">
+                        <div class="p-3 bg-gray-50 border-b font-bold text-gray-600 text-sm">Processos Abertos</div>
+                        <div id="listaProcessos" class="divide-y max-h-96 overflow-y-auto">
+                            </div>
+                    </div>
+                </div>
+
+                <div class="md:col-span-2">
+                    <div id="areaTrabalho" class="bg-white p-6 rounded shadow min-h-[400px]">
+                        <div class="text-center text-gray-400 mt-20">
+                            <i class="fa-solid fa-arrow-left text-2xl mb-2"></i>
+                            <p>Selecione um processo ao lado para começar a eliminar.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Funções de Navegação
+        function showTab(tabName) {
+            document.getElementById('tab-planilhas').classList.add('hidden');
+            document.getElementById('tab-processos').classList.add('hidden');
+            document.getElementById('btn-planilhas').classList.replace('bg-blue-600', 'bg-white');
+            document.getElementById('btn-planilhas').classList.replace('text-white', 'text-gray-600');
+            document.getElementById('btn-processos').classList.replace('bg-blue-600', 'bg-white');
+            document.getElementById('btn-processos').classList.replace('text-white', 'text-gray-600');
+
+            document.getElementById(tabName === 'planilhas' ? 'tab-planilhas' : 'tab-processos').classList.remove('hidden');
+            const activeBtn = document.getElementById(tabName === 'planilhas' ? 'btn-planilhas' : 'btn-processos');
+            activeBtn.classList.replace('bg-white', 'bg-blue-600');
+            activeBtn.classList.replace('text-gray-600', 'text-white');
+        }
+
+        // Teste de Conexão Inicial
+        fetch(`${API_URL}/planilhas`)
+            .then(() => document.getElementById('statusServer').innerHTML = '<span class="text-green-600">● Conectado</span>')
+            .catch(() => document.getElementById('statusServer').innerHTML = '<span class="text-red-500">● Erro de Conexão</span>');
+
+        // --- MÓDULO PLANILHAS ---
+        async function carregarPlanilhas() {
+            try {
+                const res = await fetch(`${API_URL}/planilhas`);
+                const data = await res.json();
+                const tbody = document.getElementById('listaPlanilhas');
+                tbody.innerHTML = '';
+                data.forEach(item => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.title}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item.type === 'eliminacao' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
+                                    ${item.type.toUpperCase()}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(item.created_at).toLocaleDateString()}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.status}</td>
+                        </tr>
+                    `;
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        document.getElementById('formPlanilha').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('p_title').value;
+            const type = document.getElementById('p_type').value;
+
+            await fetch(`${API_URL}/planilhas`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, type })
+            });
+            document.getElementById('p_title').value = '';
+            carregarPlanilhas();
+        });
+
+        // --- MÓDULO PROCESSOS ---
+        async function carregarProcessos() {
+            // OBS: Idealmente criaríamos um endpoint GET /processos no backend. 
+            // Como criamos só o POST no exemplo anterior, vou assumir que você adicionará o GET no server.js depois
+            // ou podemos usar a tabela logs.
+            // *Para este exemplo funcionar agora, vamos focar na criação e lógica visual.*
+            
+            // Simulação visual enquanto não atualizamos o backend com GET /processos
+            // Se você atualizar o backend, troque isso pelo fetch real.
+        }
+
+        // Função para mostrar a Área de Trabalho de um Processo
+        function abrirProcesso(diary, totalBoxes, id) {
+            const area = document.getElementById('areaTrabalho');
+            
+            let checkboxesHTML = '';
+            for(let i=1; i<=totalBoxes; i++) {
+                checkboxesHTML += `
+                    <label class="flex items-center space-x-2 p-2 border rounded cursor-pointer hover:bg-blue-50">
+                        <input type="checkbox" value="${i}" class="box-check form-checkbox h-5 w-5 text-blue-600">
+                        <span class="text-gray-700 font-mono text-sm">cx ${i}</span>
+                    </label>
+                `;
+            }
+
+            area.innerHTML = `
+                <div class="flex justify-between items-center mb-4 border-b pb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800">Processo: Diário ${diary}</h2>
+                        <p class="text-sm text-gray-500">Selecione as caixas eliminadas HOJE para gerar a ata.</p>
+                    </div>
+                    <button onclick="gerarAta('${id}', '${diary}')" class="bg-indigo-600 text-white px-4 py-2 rounded shadow hover:bg-indigo-700">
+                        <i class="fa-solid fa-file-pdf mr-2"></i> Gerar Ata do Dia
+                    </button>
+                </div>
+                <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 max-h-96 overflow-y-auto">
+                    ${checkboxesHTML}
+                </div>
+            `;
+        }
+
+        // Lógica do Form de Processo
+        document.getElementById('formProcesso').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const diary = document.getElementById('proc_diary').value;
+            const boxes = document.getElementById('proc_boxes').value;
+
+            // Salva no backend
+            const res = await fetch(`${API_URL}/processos`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ diary_number: diary, total_boxes: boxes })
+            });
+            
+            const data = await res.json();
+            if(data && data.length > 0) {
+                // Adiciona na lista visualmente (hack rápido)
+                const lista = document.getElementById('listaProcessos');
+                const novoItem = document.createElement('div');
+                novoItem.className = "p-3 hover:bg-blue-50 cursor-pointer border-l-4 border-transparent hover:border-blue-500 transition";
+                novoItem.onclick = () => abrirProcesso(diary, boxes, data[0].id);
+                novoItem.innerHTML = `
+                    <div class="font-bold text-gray-700">Diário ${diary}</div>
+                    <div class="text-xs text-gray-500">${boxes} caixas totais</div>
+                `;
+                lista.prepend(novoItem);
+                
+                // Abre automaticamente
+                abrirProcesso(diary, boxes, data[0].id);
+                
+                // Limpa form
+                document.getElementById('proc_diary').value = '';
+                document.getElementById('proc_boxes').value = '';
+            }
+        });
+
+        async function gerarAta(id, diary) {
+            // Coletar checkboxes marcados
+            const checked = Array.from(document.querySelectorAll('.box-check:checked')).map(cb => cb.value);
+            
+            if(checked.length === 0) {
+                alert("Selecione pelo menos uma caixa!");
+                return;
+            }
+
+            const boxesString = checked.join(', ');
+            
+            // Salvar Log no Backend
+            await fetch(`${API_URL}/processos/${id}/log`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ boxes_eliminated: boxesString })
+            });
+
+            // Gerar PDF/Impressão (Simples window.print por enquanto)
+            const janela = window.open('', '', 'width=800,height=600');
+            janela.document.write(`
+                <html><head><title>Ata de Eliminação</title>
+                <style>body{font-family:sans-serif; padding: 40px;}</style>
+                </head><body>
+                <h1 style="text-align:center">ATA DE ELIMINAÇÃO DE DOCUMENTOS</h1>
+                <hr><br>
+                <p><strong>Data:</strong> ${new Date().toLocaleDateString()}</p>
+                <p><strong>Processo (Diário Oficial):</strong> ${diary}</p>
+                <br>
+                <p>Certificamos para os devidos fins que foram eliminadas na presente data as seguintes caixas/boxes:</p>
+                <div style="background:#f0f0f0; padding:20px; border:1px solid #ccc; margin: 20px 0;">
+                    <strong>${boxesString}</strong>
+                </div>
+                <br><br><br>
+                <div style="border-top:1px solid #000; width: 200px; text-align:center; margin-top:50px;">Responsável</div>
+                </body></html>
+            `);
+            janela.document.close();
+            janela.print();
+        }
+
+        // Inicialização
+        carregarPlanilhas();
+    </script>
+</body>
+</html>
