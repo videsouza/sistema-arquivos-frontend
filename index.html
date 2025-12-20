@@ -269,37 +269,55 @@
                 alert("Selecione pelo menos uma caixa!");
                 return;
             }
-
-            const boxesString = checked.join(', ');
             
-            // Salvar Log no Backend
-            await fetch(`${API_URL}/processos/${id}/log`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ boxes_eliminated: boxesString })
-            });
+            const boxesString = checked.join(', ');
+            const btn = document.querySelector('button[onclick^="gerarAta"]');
+            const textoOriginal = btn.innerHTML;
+            
+            try {
+                // Feedback visual de carregamento
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gerando...';
+                btn.disabled = true;
 
-            // Gerar PDF/Impressão (Simples window.print por enquanto)
-            const janela = window.open('', '', 'width=800,height=600');
-            janela.document.write(`
-                <html><head><title>Ata de Eliminação</title>
-                <style>body{font-family:sans-serif; padding: 40px;}</style>
-                </head><body>
-                <h1 style="text-align:center">ATA DE ELIMINAÇÃO DE DOCUMENTOS</h1>
-                <hr><br>
-                <p><strong>Data:</strong> ${new Date().toLocaleDateString()}</p>
-                <p><strong>Processo (Diário Oficial):</strong> ${diary}</p>
-                <br>
-                <p>Certificamos para os devidos fins que foram eliminadas na presente data as seguintes caixas/boxes:</p>
-                <div style="background:#f0f0f0; padding:20px; border:1px solid #ccc; margin: 20px 0;">
-                    <strong>${boxesString}</strong>
-                </div>
-                <br><br><br>
-                <div style="border-top:1px solid #000; width: 200px; text-align:center; margin-top:50px;">Responsável</div>
-                </body></html>
-            `);
-            janela.document.close();
-            janela.print();
+                // 1. Salvar Log no Banco (Para histórico)
+                await fetch(`${API_URL}/processos/${id}/log`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ boxes_eliminated: boxesString })
+                });
+
+                // 2. Pedir o Word para o Backend
+                const res = await fetch(`${API_URL}/processos/${id}/ata-word`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        boxes_eliminated: boxesString,
+                        diary_number: diary 
+                    })
+                });
+
+                if (res.ok) {
+                    // 3. Truque para baixar o arquivo recebido (Blob)
+                    const blob = await res.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Ata_${diary.replace(/\//g, '-')}_${new Date().toISOString().split('T')[0]}.docx`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove(); // Limpeza
+                } else {
+                    alert("Erro ao gerar o arquivo Word.");
+                }
+
+            } catch (error) {
+                console.error(error);
+                alert("Erro de conexão.");
+            } finally {
+                // Voltar botão ao normal
+                btn.innerHTML = textoOriginal;
+                btn.disabled = false;
+            }
         }
 
         // Inicialização
