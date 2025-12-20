@@ -167,14 +167,34 @@
 
         // --- MÓDULO PROCESSOS ---
         async function carregarProcessos() {
-            // OBS: Idealmente criaríamos um endpoint GET /processos no backend. 
-            // Como criamos só o POST no exemplo anterior, vou assumir que você adicionará o GET no server.js depois
-            // ou podemos usar a tabela logs.
-            // *Para este exemplo funcionar agora, vamos focar na criação e lógica visual.*
-            
-            // Simulação visual enquanto não atualizamos o backend com GET /processos
-            // Se você atualizar o backend, troque isso pelo fetch real.
+            try {
+                const res = await fetch(`${API_URL}/processos`);
+                const data = await res.json();
+                
+                const lista = document.getElementById('listaProcessos');
+                lista.innerHTML = ''; // Limpa a lista antes de encher
+
+                data.forEach(proc => {
+                    const div = document.createElement('div');
+                    div.className = "p-3 hover:bg-blue-50 cursor-pointer border-l-4 border-transparent hover:border-blue-500 transition border-b";
+                    div.onclick = () => abrirProcesso(proc.diary_number, proc.total_boxes, proc.id);
+                    
+                    div.innerHTML = `
+                        <div class="font-bold text-gray-700">Diário ${proc.diary_number}</div>
+                        <div class="flex justify-between text-xs text-gray-500">
+                            <span>${proc.total_boxes} caixas</span>
+                            <span>${new Date(proc.created_at).toLocaleDateString()}</span>
+                        </div>
+                    `;
+                    lista.appendChild(div);
+                });
+            } catch (e) {
+                console.error("Erro ao carregar processos:", e);
+            }
         }
+        
+        // Chamando a função para carregar assim que abrir a página
+        carregarProcessos();
 
         // Função para mostrar a Área de Trabalho de um Processo
         function abrirProcesso(diary, totalBoxes, id) {
