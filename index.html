@@ -197,7 +197,7 @@
         carregarProcessos();
 
         // Função para mostrar a Área de Trabalho de um Processo
-        function abrirProcesso(diary, totalBoxes, id) {
+function abrirProcesso(diary, totalBoxes, id) {
             const area = document.getElementById('areaTrabalho');
             
             let checkboxesHTML = '';
@@ -211,16 +211,38 @@
             }
 
             area.innerHTML = `
-                <div class="flex justify-between items-center mb-4 border-b pb-4">
-                    <div>
-                        <h2 class="text-xl font-bold text-gray-800">Processo: Diário ${diary}</h2>
-                        <p class="text-sm text-gray-500">Selecione as caixas eliminadas HOJE para gerar a ata.</p>
+                <div class="mb-6 border-b pb-4">
+                    <h2 class="text-xl font-bold text-gray-800">Processo: Diário ${diary}</h2>
+                    <p class="text-sm text-gray-500 mb-4">Selecione as caixas e preencha os dados para a Ata.</p>
+                    
+                    <div class="bg-gray-50 p-4 rounded border grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <label class="block font-bold text-gray-600">Funcionário Responsável</label>
+                            <input type="text" id="ata_funcionario" value="Vinicius Augusto de Souza" class="w-full border p-1 rounded">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-gray-600">Nº da Planilha de Eliminação</label>
+                            <input type="text" id="ata_planilha" value="01/SEC/2025" class="w-full border p-1 rounded">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-gray-600">Data do Diário</label>
+                            <input type="text" id="ata_data_diario" value="04/06/2025" class="w-full border p-1 rounded">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-gray-600">Páginas do Diário</label>
+                            <input type="text" id="ata_paginas" value="07 a 16" class="w-full border p-1 rounded">
+                        </div>
                     </div>
+                </div>
+
+                <div class="flex justify-between items-center mb-2">
+                    <span class="font-bold text-gray-700">Caixas Eliminadas Hoje:</span>
                     <button onclick="gerarAta('${id}', '${diary}')" class="bg-indigo-600 text-white px-4 py-2 rounded shadow hover:bg-indigo-700">
-                        <i class="fa-solid fa-file-pdf mr-2"></i> Gerar Ata do Dia
+                        <i class="fa-solid fa-file-word mr-2"></i> Baixar Ata Oficial
                     </button>
                 </div>
-                <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 max-h-96 overflow-y-auto">
+
+                <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 max-h-80 overflow-y-auto border p-2 rounded">
                     ${checkboxesHTML}
                 </div>
             `;
@@ -261,43 +283,50 @@
             }
         });
 
-        async function gerarAta(id, diary) {
-            // Coletar checkboxes marcados
+async function gerarAta(id, diary) {
             const checked = Array.from(document.querySelectorAll('.box-check:checked')).map(cb => cb.value);
             
             if(checked.length === 0) {
                 alert("Selecione pelo menos uma caixa!");
                 return;
             }
+
+            // Coleta os dados do formulário
+            const funcionario = document.getElementById('ata_funcionario').value;
+            const planilha = document.getElementById('ata_planilha').value;
+            const dataDiario = document.getElementById('ata_data_diario').value;
+            const paginas = document.getElementById('ata_paginas').value;
             
             const boxesString = checked.join(', ');
             const btn = document.querySelector('button[onclick^="gerarAta"]');
             const textoOriginal = btn.innerHTML;
             
             try {
-                // Feedback visual de carregamento
                 btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gerando...';
                 btn.disabled = true;
 
-                // 1. Salvar Log no Banco (Para histórico)
+                // 1. Salvar Log
                 await fetch(`${API_URL}/processos/${id}/log`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ boxes_eliminated: boxesString })
                 });
 
-                // 2. Pedir o Word para o Backend
+                // 2. Pedir o Word com os dados completos
                 const res = await fetch(`${API_URL}/processos/${id}/ata-word`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         boxes_eliminated: boxesString,
-                        diary_number: diary 
+                        diary_number: diary,
+                        funcionario, 
+                        planilha,
+                        data_diario: dataDiario,
+                        paginas
                     })
                 });
 
                 if (res.ok) {
-                    // 3. Truque para baixar o arquivo recebido (Blob)
                     const blob = await res.blob();
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
@@ -305,7 +334,7 @@
                     a.download = `Ata_${diary.replace(/\//g, '-')}_${new Date().toISOString().split('T')[0]}.docx`;
                     document.body.appendChild(a);
                     a.click();
-                    a.remove(); // Limpeza
+                    a.remove();
                 } else {
                     alert("Erro ao gerar o arquivo Word.");
                 }
@@ -314,7 +343,6 @@
                 console.error(error);
                 alert("Erro de conexão.");
             } finally {
-                // Voltar botão ao normal
                 btn.innerHTML = textoOriginal;
                 btn.disabled = false;
             }
