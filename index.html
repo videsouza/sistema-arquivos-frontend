@@ -9,128 +9,18 @@
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans">
 
-    <script>
-        // --- SUA URL AQUI ---
-        const API_URL = "https://sistema-arquivos-api.onrender.com"; 
-    </script>
-
-    <div class="container mx-auto p-4 max-w-6xl">
+<script>
+        // --- 1. CONFIGURAÇÕES E UTILITÁRIOS ---
         
-        <header class="mb-8 bg-white p-6 rounded-lg shadow-md border-l-4 border-indigo-600 flex justify-between items-center">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-700">Sistema de Gestão Documental</h1>
-                <p class="text-gray-500 text-sm">Controle de Fluxo, Eliminação e Correção</p>
-            </div>
-            <div id="statusServer" class="text-xs font-mono bg-gray-100 px-3 py-1 rounded text-gray-400">
-                <i class="fa-solid fa-circle-notch fa-spin mr-1"></i> Conectando...
-            </div>
-        </header>
+        // COLAR SUA URL AQUI (SEM A BARRA DO FINAL)
+        const API_URL = "https://sistema-arquivos-api.onrender.com"; 
 
-        <div class="flex space-x-2 mb-6 overflow-x-auto">
-            <button onclick="showTab('planilhas')" id="btn-planilhas" class="flex-1 py-3 px-4 bg-indigo-600 text-white rounded-t-lg shadow font-semibold transition flex items-center justify-center gap-2">
-                <i class="fa-solid fa-folder-open"></i> Planilhas Registradas
-            </button>
-            <button onclick="showTab('correcao')" id="btn-correcao" class="flex-1 py-3 px-4 bg-white text-gray-600 rounded-t-lg shadow font-semibold hover:bg-orange-50 transition flex items-center justify-center gap-2">
-                <i class="fa-solid fa-pen-to-square text-orange-500"></i> Em Correção
-            </button>
-            <button onclick="showTab('processos')" id="btn-processos" class="flex-1 py-3 px-4 bg-white text-gray-600 rounded-t-lg shadow font-semibold hover:bg-gray-50 transition flex items-center justify-center gap-2">
-                <i class="fa-solid fa-boxes-stacked"></i> Eliminação (Atas)
-            </button>
-        </div>
-
-        <div id="tab-planilhas" class="aba-conteudo space-y-6">
-            <div class="bg-white p-6 rounded-b-lg rounded-r-lg shadow">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-lg font-bold text-gray-700">Repositório de Planilhas</h2>
-                    <button onclick="toggleForm()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm font-bold">
-                        <i class="fa-solid fa-plus mr-1"></i> Nova Planilha
-                    </button>
-                </div>
-
-                <div id="formNovaPlanilha" class="hidden bg-gray-50 p-4 rounded border mb-6">
-                    <form id="formPlanilha" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                        <div class="md:col-span-2">
-                            <label class="block text-xs font-bold text-gray-500 uppercase">Título</label>
-                            <input type="text" id="p_title" required class="mt-1 block w-full border border-gray-300 rounded p-2" placeholder="Ex: Remessa RH Junho">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase">Tipo</label>
-                            <select id="p_type" class="mt-1 block w-full border border-gray-300 rounded p-2 bg-white">
-                                <option value="eliminacao">Eliminação</option>
-                                <option value="remessa">Remessa</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700 font-bold">Salvar</button>
-                    </form>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="min-w-full text-left text-sm">
-                        <thead class="bg-gray-50 text-gray-500 border-b">
-                            <tr>
-                                <th class="px-6 py-3 font-bold uppercase">Título</th>
-                                <th class="px-6 py-3 font-bold uppercase">Tipo</th>
-                                <th class="px-6 py-3 font-bold uppercase">Data Criação</th>
-                                <th class="px-6 py-3 font-bold uppercase">Status</th>
-                                <th class="px-6 py-3 font-bold uppercase text-right">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="listaPlanilhas" class="divide-y divide-gray-100">
-                            </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div id="tab-correcao" class="aba-conteudo hidden space-y-6">
-            <div class="bg-white p-6 rounded-b-lg rounded-r-lg shadow border-t-4 border-orange-400">
-                <h2 class="text-lg font-bold text-gray-700 mb-4 flex items-center">
-                    <i class="fa-solid fa-triangle-exclamation text-orange-500 mr-2"></i> 
-                    Planilhas Aguardando Correção
-                </h2>
-                <p class="text-gray-500 text-sm mb-6">Baixe a versão atual, faça as correções e suba a nova versão para finalizar.</p>
-
-                <div id="listaCorrecao" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    </div>
-            </div>
-        </div>
-
-        <div id="tab-processos" class="aba-conteudo hidden">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="md:col-span-1 space-y-6">
-                    <div class="bg-white p-5 rounded shadow">
-                        <h3 class="font-bold text-gray-700 mb-3">Novo Processo</h3>
-                        <form id="formProcesso" class="space-y-3">
-                            <input type="text" id="proc_diary" placeholder="Nº Diário Oficial" required class="w-full border p-2 rounded text-sm">
-                            <input type="number" id="proc_boxes" placeholder="Qtd Caixas" required class="w-full border p-2 rounded text-sm">
-                            <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 text-sm font-bold">Iniciar</button>
-                        </form>
-                    </div>
-                    <div class="bg-white rounded shadow overflow-hidden">
-                        <div class="p-3 bg-gray-50 border-b font-bold text-gray-600 text-sm">Histórico</div>
-                        <div id="listaProcessos" class="divide-y max-h-96 overflow-y-auto"></div>
-                    </div>
-                </div>
-                <div class="md:col-span-2">
-                    <div id="areaTrabalho" class="bg-white p-6 rounded shadow min-h-[400px]">
-                        <div class="text-center text-gray-400 mt-20">
-                            <i class="fa-solid fa-arrow-left text-2xl mb-2"></i>
-                            <p>Selecione um processo.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <script>
-        // 1. Controle de Abas
+        // Controle de Abas
         function showTab(tabName) {
             document.querySelectorAll('.aba-conteudo').forEach(el => el.classList.add('hidden'));
             document.getElementById(`tab-${tabName}`).classList.remove('hidden');
 
-            // Resetar botões
+            // Reset visual dos botões
             ['planilhas', 'correcao', 'processos'].forEach(t => {
                 const btn = document.getElementById(`btn-${t}`);
                 btn.className = "flex-1 py-3 px-4 bg-white text-gray-600 rounded-t-lg shadow font-semibold hover:bg-gray-50 transition flex items-center justify-center gap-2";
@@ -141,23 +31,25 @@
             let colorClass = tabName === 'correcao' ? 'bg-orange-500' : 'bg-indigo-600';
             activeBtn.className = `flex-1 py-3 px-4 ${colorClass} text-white rounded-t-lg shadow font-semibold transition flex items-center justify-center gap-2`;
 
-            // Recarregar dados específicos
+            // Recarregar dados da aba
             if(tabName === 'planilhas') carregarPlanilhas();
             if(tabName === 'correcao') carregarCorrecao();
-            if(tabName === 'processos') carregarProcessos();
+            // Processos carregam apenas uma vez ou sob demanda se preferir
+            if(tabName === 'processos' && document.getElementById('listaProcessos').innerHTML === '') carregarProcessos();
         }
 
         function toggleForm() {
             document.getElementById('formNovaPlanilha').classList.toggle('hidden');
         }
 
-        // 2. Status do Servidor
+        // Teste de Conexão
         fetch(`${API_URL}/planilhas`)
             .then(() => document.getElementById('statusServer').innerHTML = '<span class="text-green-600 font-bold">● Online</span>')
             .catch(() => document.getElementById('statusServer').innerHTML = '<span class="text-red-500 font-bold">● Offline</span>');
 
 
-        // --- LÓGICA: PLANILHAS REGISTRADAS ---
+        // --- 2. MÓDULO: PLANILHAS REGISTRADAS ---
+
         async function carregarPlanilhas() {
             try {
                 const res = await fetch(`${API_URL}/planilhas`);
@@ -165,11 +57,11 @@
                 const tbody = document.getElementById('listaPlanilhas');
                 tbody.innerHTML = '';
                 
-                // Filtra para NÃO mostrar as que estão em correção
+                // Exclui as que estão em correção da lista principal
                 const filtradas = data.filter(d => d.status !== 'em_correcao');
 
                 if(filtradas.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-gray-400">Nenhuma planilha registrada.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-gray-400">Nenhuma planilha registrada nesta lista.</td></tr>';
                     return;
                 }
 
@@ -177,23 +69,26 @@
                     const corBadge = item.type === 'eliminacao' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800';
                     const dataF = new Date(item.created_at).toLocaleDateString('pt-BR');
 
+                    // Linha Principal
                     const row = document.createElement('tr');
-                    row.className = "hover:bg-gray-50 border-b group";
+                    row.className = "hover:bg-gray-50 border-b group transition";
                     row.innerHTML = `
                         <td class="px-6 py-4 font-medium text-gray-900 cursor-pointer" onclick="alternarDetalhes('${item.id}')">${item.title}</td>
                         <td class="px-6 py-4"><span class="px-2 py-1 text-xs font-bold rounded-full ${corBadge}">${item.type.toUpperCase()}</span></td>
-                        <td class="px-6 py-4 text-gray-500">${dataF}</td>
-                        <td class="px-6 py-4"><span class="text-xs font-mono bg-gray-200 px-2 py-1 rounded">${item.status}</span></td>
-                        <td class="px-6 py-4 text-right">
-                            <button onclick="enviarParaCorrecao('${item.id}')" class="text-orange-500 hover:text-orange-700 text-xs font-bold border border-orange-200 hover:border-orange-500 px-3 py-1 rounded transition">
+                        <td class="px-6 py-4 text-gray-500 text-sm">${dataF}</td>
+                        <td class="px-6 py-4"><span class="text-xs font-mono bg-gray-200 px-2 py-1 rounded text-gray-600">${item.status}</span></td>
+                        <td class="px-6 py-4 text-right flex items-center justify-end gap-2">
+                            <button onclick="enviarParaCorrecao('${item.id}')" class="text-orange-500 hover:text-orange-700 text-xs font-bold border border-orange-200 hover:border-orange-500 px-2 py-1 rounded transition" title="Enviar para Correção">
                                 <i class="fa-solid fa-share-from-square"></i> Correção
                             </button>
-                            <i class="fa-solid fa-chevron-down text-gray-300 ml-2 cursor-pointer" onclick="alternarDetalhes('${item.id}')"></i>
+                            <button onclick="alternarDetalhes('${item.id}')" class="text-gray-400 hover:text-gray-600">
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </button>
                         </td>
                     `;
                     tbody.appendChild(row);
 
-                    // Detalhes (Histórico)
+                    // Linha Detalhes (Histórico + Upload)
                     const rowDetail = document.createElement('tr');
                     rowDetail.id = `detalhe-${item.id}`;
                     rowDetail.className = "hidden bg-gray-50 border-b shadow-inner";
@@ -201,16 +96,18 @@
                         <td colspan="5" class="p-4">
                             <div class="flex flex-col md:flex-row gap-6">
                                 <div class="flex-1">
-                                    <h4 class="font-bold text-gray-500 text-xs uppercase mb-2">Histórico de Versões</h4>
-                                    <ul id="lista-versoes-${item.id}" class="space-y-1 text-sm">
-                                        <li class="text-gray-400 text-xs">Carregando...</li>
+                                    <h4 class="font-bold text-gray-500 text-xs uppercase mb-2"><i class="fa-solid fa-clock-rotate-left"></i> Histórico de Versões</h4>
+                                    <ul id="lista-versoes-${item.id}" class="space-y-1 text-sm max-h-32 overflow-y-auto">
+                                        <li class="text-gray-400 text-xs italic">Carregando versões...</li>
                                     </ul>
                                 </div>
-                                <div class="w-full md:w-1/3 border-l pl-4">
-                                    <h5 class="font-bold text-gray-500 text-xs uppercase mb-2">Upload Rápido</h5>
-                                    <div class="flex gap-2">
-                                        <input type="file" id="input-file-${item.id}" class="text-xs w-full">
-                                        <button onclick="fazerUpload('${item.id}')" class="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700"><i class="fa-solid fa-upload"></i></button>
+                                <div class="w-full md:w-1/3 border-l pl-4 border-gray-200">
+                                    <h5 class="font-bold text-gray-500 text-xs uppercase mb-2">Upload Rápido (Nova Versão)</h5>
+                                    <div class="flex flex-col gap-2">
+                                        <input type="file" id="input-file-${item.id}" class="text-xs w-full text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                                        <button onclick="fazerUpload('${item.id}')" class="bg-blue-600 text-white px-3 py-2 rounded text-xs font-bold hover:bg-blue-700 transition shadow-sm w-full">
+                                            <i class="fa-solid fa-cloud-arrow-up mr-1"></i> Enviar Versão
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -221,21 +118,50 @@
             } catch (e) { console.error(e); }
         }
 
+        // Cadastro nova planilha
+        document.getElementById('formPlanilha').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('p_title').value;
+            const type = document.getElementById('p_type').value;
+            
+            const btn = e.submitter;
+            const txt = btn.innerText;
+            btn.innerText = 'Salvando...';
+            btn.disabled = true;
+
+            try {
+                await fetch(`${API_URL}/planilhas`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ title, type })
+                });
+                document.getElementById('p_title').value = '';
+                toggleForm();
+                carregarPlanilhas();
+            } catch(err) { alert('Erro ao salvar'); }
+            finally {
+                btn.innerText = txt;
+                btn.disabled = false;
+            }
+        });
+
         async function enviarParaCorrecao(id) {
-            if(!confirm("Enviar planilha para o Painel de Correção? Ela sairá desta lista.")) return;
+            if(!confirm("Tem certeza? A planilha sairá desta lista e irá para a aba 'Em Correção'.")) return;
             
             await fetch(`${API_URL}/planilhas/${id}/status`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: 'em_correcao' })
             });
-            carregarPlanilhas();
+            carregarPlanilhas(); // Recarrega para sumir da lista
         }
 
-        // --- LÓGICA: PAINEL DE CORREÇÃO ---
+
+        // --- 3. MÓDULO: PAINEL DE CORREÇÃO ---
+
         async function carregarCorrecao() {
             const grid = document.getElementById('listaCorrecao');
-            grid.innerHTML = '<div class="col-span-3 text-center text-gray-400 py-10"><i class="fa-solid fa-circle-notch fa-spin text-2xl"></i></div>';
+            grid.innerHTML = '<div class="col-span-3 text-center text-gray-400 py-10"><i class="fa-solid fa-circle-notch fa-spin text-2xl"></i><br>Buscando planilhas...</div>';
 
             try {
                 const res = await fetch(`${API_URL}/planilhas`);
@@ -244,41 +170,49 @@
 
                 grid.innerHTML = '';
                 if(emCorrecao.length === 0) {
-                    grid.innerHTML = '<div class="col-span-3 text-center text-gray-400 py-10">Nenhuma planilha aguardando correção.</div>';
+                    grid.innerHTML = '<div class="col-span-3 text-center text-gray-400 py-10 bg-white rounded border border-dashed">Nenhuma planilha aguardando correção no momento.</div>';
                     return;
                 }
 
                 for (const item of emCorrecao) {
-                    // Buscar última versão para download
+                    // Busca versão mais recente para mostrar botão de download
                     const resV = await fetch(`${API_URL}/planilhas/${item.id}/versoes`);
                     const versoes = await resV.json();
+                    
                     const linkDownload = versoes.length > 0 ? versoes[0].url : '#';
-                    const nomeArquivo = versoes.length > 0 ? versoes[0].file_name : 'Sem arquivo';
+                    const nomeArquivo = versoes.length > 0 ? versoes[0].file_name : 'Nenhum arquivo enviado';
+                    const classeLink = versoes.length > 0 ? 'text-blue-600 hover:underline' : 'text-gray-400 cursor-not-allowed pointer-events-none';
 
                     grid.innerHTML += `
-                        <div class="bg-white border rounded-lg p-5 shadow-sm hover:shadow-md transition relative">
-                            <div class="absolute top-0 right-0 bg-orange-100 text-orange-600 text-xs font-bold px-2 py-1 rounded-bl">EM CORREÇÃO</div>
-                            <h3 class="font-bold text-gray-800 text-lg mb-1">${item.title}</h3>
-                            <p class="text-xs text-gray-500 mb-4 uppercase">${item.type} • Iniciado em ${new Date(item.created_at).toLocaleDateString()}</p>
+                        <div class="bg-white border border-orange-200 rounded-lg p-5 shadow-sm hover:shadow-md transition relative group">
+                            <div class="absolute top-0 right-0 bg-orange-100 text-orange-600 text-[10px] font-bold px-2 py-1 rounded-bl uppercase tracking-wide">Aguardando Correção</div>
                             
-                            <div class="bg-gray-50 p-3 rounded border mb-4">
-                                <p class="text-xs text-gray-500 mb-1">Versão Atual para Baixar:</p>
-                                <a href="${linkDownload}" target="_blank" class="text-blue-600 font-semibold text-sm hover:underline flex items-center">
+                            <h3 class="font-bold text-gray-800 text-lg mb-1 truncate" title="${item.title}">${item.title}</h3>
+                            <p class="text-xs text-gray-500 mb-4 uppercase flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full ${item.type === 'eliminacao' ? 'bg-red-400' : 'bg-green-400'}"></span>
+                                ${item.type}
+                            </p>
+                            
+                            <div class="bg-gray-50 p-3 rounded border border-gray-100 mb-4">
+                                <p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Versão Atual (Para revisar)</p>
+                                <a href="${linkDownload}" target="_blank" class="${classeLink} font-semibold text-sm flex items-center truncate">
                                     <i class="fa-solid fa-file-arrow-down mr-2"></i> ${nomeArquivo}
                                 </a>
                             </div>
 
-                            <div class="space-y-2">
-                                <label class="block text-xs font-bold text-gray-700">Subir Correção & Finalizar:</label>
-                                <div class="flex gap-2">
-                                    <input type="file" id="correcao-file-${item.id}" class="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-gray-200 file:text-gray-700 cursor-pointer">
+                            <div class="space-y-3 pt-3 border-t border-gray-100">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">Anexar Versão Corrigida:</label>
+                                    <input type="file" id="correcao-file-${item.id}" class="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-green-50 file:text-green-700 cursor-pointer border rounded p-1">
                                 </div>
-                                <button onclick="concluirCorrecao('${item.id}')" class="w-full bg-green-600 text-white py-2 rounded font-bold text-sm hover:bg-green-700 shadow mt-2">
-                                    <i class="fa-solid fa-check"></i> Planilha Corrigida
-                                </button>
-                                <button onclick="devolverPlanilha('${item.id}')" class="w-full bg-white border border-gray-300 text-gray-600 py-1 rounded text-xs hover:bg-gray-50 mt-1">
-                                    <i class="fa-solid fa-rotate-left"></i> Devolver sem alterações
-                                </button>
+                                <div class="flex flex-col gap-2">
+                                    <button onclick="concluirCorrecao('${item.id}')" class="w-full bg-green-600 text-white py-2 rounded font-bold text-sm hover:bg-green-700 shadow transition flex justify-center items-center gap-2">
+                                        <i class="fa-solid fa-check"></i> Enviar & Finalizar
+                                    </button>
+                                    <button onclick="devolverPlanilha('${item.id}')" class="w-full bg-white border border-gray-300 text-gray-500 py-1 rounded text-xs hover:bg-gray-50 hover:text-gray-700 transition">
+                                        <i class="fa-solid fa-rotate-left"></i> Devolver (Sem upload)
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -287,11 +221,11 @@
         }
 
         async function devolverPlanilha(id) {
-            if(!confirm("Devolver para 'Planilhas Registradas' sem finalizar?")) return;
+            if(!confirm("Devolver para a lista principal sem marcar como corrigida?")) return;
             await fetch(`${API_URL}/planilhas/${id}/status`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: 'rascunho' })
+                body: JSON.stringify({ status: 'revisao' }) // Volta como 'revisao'
             });
             carregarCorrecao();
         }
@@ -301,12 +235,14 @@
             const file = inputFile.files[0];
 
             if (!file) {
-                alert("Por favor, anexe o arquivo corrigido antes de finalizar.");
+                alert("⚠️ Atenção: Você precisa selecionar o arquivo corrigido antes de finalizar.");
                 return;
             }
 
-            const btn = event.target;
-            const textoOriginal = btn.innerHTML;
+            const btn = event.target; // Captura o botão clicado
+            const originalHTML = btn.innerHTML;
+            
+            // Feedback visual
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
             btn.disabled = true;
 
@@ -320,72 +256,268 @@
                     body: formData
                 });
 
-                if(!resUpload.ok) throw new Error("Erro no upload");
+                if(!resUpload.ok) throw new Error("Falha no upload");
 
-                // 2. Mudar Status de volta para Revisão/Rascunho
+                // 2. Mudar Status de volta para Revisão (ou Final se preferir)
                 await fetch(`${API_URL}/planilhas/${id}/status`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ status: 'revisao' }) // Volta como 'revisao' para diferenciar
+                    body: JSON.stringify({ status: 'revisao' }) 
                 });
 
-                // 3. Atualizar tela
+                // 3. Sucesso
+                alert("✅ Sucesso! Planilha corrigida e enviada de volta.");
                 carregarCorrecao();
-                alert("Correção enviada com sucesso! Planilha voltou para a lista principal.");
 
             } catch (e) {
-                alert("Erro ao processar correção.");
+                alert("Erro ao processar correção: " + e.message);
                 console.error(e);
+            } finally {
+                // Restaura botão (caso tenha dado erro e continuado na tela)
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }
+        }
+
+
+        // --- 4. FUNÇÕES COMUNS (UPLOAD, VERSÕES) ---
+
+        // Essa foi a função que faltou antes! Ela serve para o botão da Aba Principal.
+        async function fazerUpload(id) {
+            const input = document.getElementById(`input-file-${id}`);
+            const file = input.files[0];
+            if (!file) return alert("Selecione um arquivo primeiro!");
+
+            const btn = event.target; // Botão clicado
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('arquivo', file);
+
+            try {
+                const res = await fetch(`${API_URL}/planilhas/${id}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (res.ok) {
+                    input.value = ''; // Limpa input
+                    carregarVersoes(id); // Atualiza lista de versões na hora
+                    alert("Versão enviada com sucesso!");
+                } else {
+                    alert("Erro no upload. Tente novamente.");
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Erro de conexão.");
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function alternarDetalhes(id) {
+            const row = document.getElementById(`detalhe-${id}`);
+            row.classList.toggle('hidden');
+            if(!row.classList.contains('hidden')) {
+                carregarVersoes(id);
+            }
+        }
+
+        async function carregarVersoes(id) {
+            const ul = document.getElementById(`lista-versoes-${id}`);
+            ul.innerHTML = '<li class="text-gray-400 text-xs">Atualizando...</li>';
+            
+            try {
+                const res = await fetch(`${API_URL}/planilhas/${id}/versoes`);
+                const data = await res.json();
+                
+                ul.innerHTML = '';
+                if(data.length === 0) {
+                    ul.innerHTML = '<li class="text-gray-400 text-xs italic">Nenhum arquivo histórico.</li>';
+                    return;
+                }
+
+                data.forEach(v => {
+                    ul.innerHTML += `
+                        <li class="flex justify-between items-center bg-white p-2 rounded border border-gray-100 hover:bg-gray-50">
+                            <div class="flex items-center overflow-hidden">
+                                <span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-1.5 py-0.5 rounded mr-2 shrink-0">V${v.version_number}</span>
+                                <span class="text-gray-600 truncate text-xs" title="${v.file_name}">${v.file_name}</span>
+                            </div>
+                            <a href="${v.url}" target="_blank" class="text-blue-500 hover:text-blue-700 ml-2" title="Baixar">
+                                <i class="fa-solid fa-download"></i>
+                            </a>
+                        </li>`;
+                });
+            } catch(e) { ul.innerHTML = '<li class="text-red-400 text-xs">Erro ao carregar.</li>'; }
+        }
+
+
+        // --- 5. MÓDULO: PROCESSOS & ATAS (Restaurado) ---
+
+        async function carregarProcessos() {
+            try {
+                const res = await fetch(`${API_URL}/processos`);
+                const data = await res.json();
+                
+                const lista = document.getElementById('listaProcessos');
+                lista.innerHTML = ''; 
+
+                data.forEach(proc => {
+                    const div = document.createElement('div');
+                    div.className = "p-3 hover:bg-blue-50 cursor-pointer border-l-4 border-transparent hover:border-blue-500 transition border-b";
+                    div.onclick = () => abrirProcesso(proc.diary_number, proc.total_boxes, proc.id);
+                    
+                    div.innerHTML = `
+                        <div class="font-bold text-gray-700 text-sm">Diário ${proc.diary_number}</div>
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>${proc.total_boxes} caixas</span>
+                            <span>${new Date(proc.created_at).toLocaleDateString()}</span>
+                        </div>
+                    `;
+                    lista.appendChild(div);
+                });
+            } catch (e) { console.error("Erro ao carregar processos:", e); }
+        }
+
+        // Form de Novo Processo
+        document.getElementById('formProcesso').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const diary = document.getElementById('proc_diary').value;
+            const boxes = document.getElementById('proc_boxes').value;
+            
+            await fetch(`${API_URL}/processos`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ diary_number: diary, total_boxes: boxes })
+            });
+            
+            document.getElementById('proc_diary').value = '';
+            document.getElementById('proc_boxes').value = '';
+            carregarProcessos();
+        });
+
+        function abrirProcesso(diary, totalBoxes, id) {
+            const area = document.getElementById('areaTrabalho');
+            
+            let checkboxesHTML = '';
+            for(let i=1; i<=totalBoxes; i++) {
+                checkboxesHTML += `
+                    <label class="flex items-center justify-center p-2 border rounded cursor-pointer hover:bg-blue-50 bg-gray-50">
+                        <input type="checkbox" value="${i}" class="box-check form-checkbox h-4 w-4 text-blue-600 mr-2">
+                        <span class="text-gray-700 font-mono text-xs font-bold">${i}</span>
+                    </label>
+                `;
+            }
+
+            area.innerHTML = `
+                <div class="mb-4 border-b pb-4">
+                    <h2 class="text-lg font-bold text-gray-800">Diário ${diary}</h2>
+                    <p class="text-xs text-gray-500 mb-4">Selecione as caixas e preencha os dados da Ata.</p>
+                    
+                    <div class="bg-blue-50 p-4 rounded border border-blue-100 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                        <div>
+                            <label class="block font-bold text-gray-600 mb-1">Funcionário Responsável</label>
+                            <input type="text" id="ata_funcionario" value="Vinicius Augusto de Souza" class="w-full border p-1.5 rounded focus:ring-2 focus:ring-blue-300 outline-none">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-gray-600 mb-1">Nº Planilha Eliminação</label>
+                            <input type="text" id="ata_planilha" value="01/SEC/2025" class="w-full border p-1.5 rounded focus:ring-2 focus:ring-blue-300 outline-none">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-gray-600 mb-1">Data do Diário</label>
+                            <input type="text" id="ata_data_diario" value="04/06/2025" class="w-full border p-1.5 rounded focus:ring-2 focus:ring-blue-300 outline-none">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-gray-600 mb-1">Páginas</label>
+                            <input type="text" id="ata_paginas" value="07 a 16" class="w-full border p-1.5 rounded focus:ring-2 focus:ring-blue-300 outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mb-2 sticky top-0 bg-white py-2 z-10">
+                    <span class="font-bold text-gray-700 text-sm">Caixas Eliminadas Hoje:</span>
+                    <button onclick="gerarAta('${id}', '${diary}')" class="bg-indigo-600 text-white px-4 py-2 rounded shadow hover:bg-indigo-700 text-xs font-bold transition">
+                        <i class="fa-solid fa-file-word mr-1"></i> Baixar Ata (.docx)
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-5 md:grid-cols-8 lg:grid-cols-10 gap-2 max-h-80 overflow-y-auto border p-2 rounded bg-white">
+                    ${checkboxesHTML}
+                </div>
+            `;
+        }
+
+        async function gerarAta(id, diary) {
+            const checked = Array.from(document.querySelectorAll('.box-check:checked')).map(cb => cb.value);
+            
+            if(checked.length === 0) {
+                alert("⚠️ Selecione pelo menos uma caixa para gerar a ata.");
+                return;
+            }
+
+            const funcionario = document.getElementById('ata_funcionario').value;
+            const planilha = document.getElementById('ata_planilha').value;
+            const dataDiario = document.getElementById('ata_data_diario').value;
+            const paginas = document.getElementById('ata_paginas').value;
+            
+            const boxesString = checked.join(', ');
+            const btn = document.querySelector('button[onclick^="gerarAta"]');
+            const textoOriginal = btn.innerHTML;
+            
+            try {
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gerando...';
+                btn.disabled = true;
+
+                // Log
+                await fetch(`${API_URL}/processos/${id}/log`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ boxes_eliminated: boxesString })
+                });
+
+                // Word
+                const res = await fetch(`${API_URL}/processos/${id}/ata-word`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        boxes_eliminated: boxesString,
+                        diary_number: diary,
+                        funcionario, 
+                        planilha,
+                        data_diario: dataDiario,
+                        paginas
+                    })
+                });
+
+                if (res.ok) {
+                    const blob = await res.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Ata_${diary.replace(/\//g, '-')}_${new Date().toISOString().split('T')[0]}.docx`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                } else {
+                    alert("Erro ao gerar o arquivo.");
+                }
+
+            } catch (error) {
+                console.error(error);
+                alert("Erro de conexão.");
             } finally {
                 btn.innerHTML = textoOriginal;
                 btn.disabled = false;
             }
         }
 
-        // --- FUNÇÕES AUXILIARES (Expandir, Upload Simples, etc) ---
-        // Reaproveitando do código anterior
-        function alternarDetalhes(id) {
-            const row = document.getElementById(`detalhe-${id}`);
-            row.classList.toggle('hidden');
-            if(!row.classList.contains('hidden')) carregarVersoes(id);
-        }
-
-        async function carregarVersoes(id) {
-            const ul = document.getElementById(`lista-versoes-${id}`);
-            const res = await fetch(`${API_URL}/planilhas/${id}/versoes`);
-            const data = await res.json();
-            ul.innerHTML = '';
-            data.forEach(v => {
-                ul.innerHTML += `
-                    <li class="flex justify-between items-center bg-white p-1 rounded border">
-                        <span><span class="bg-blue-100 text-blue-800 text-xs px-1 rounded mr-1">V${v.version_number}</span> ${v.file_name}</span>
-                        <a href="${v.url}" target="_blank" class="text-blue-600 hover:text-blue-800"><i class="fa-solid fa-download"></i></a>
-                    </li>`;
-            });
-        }
-
-        // Cadastro nova planilha
-        document.getElementById('formPlanilha').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const title = document.getElementById('p_title').value;
-            const type = document.getElementById('p_type').value;
-            await fetch(`${API_URL}/planilhas`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ title, type })
-            });
-            document.getElementById('p_title').value = '';
-            toggleForm();
-            carregarPlanilhas();
-        });
-
-        // Inicializar
+        // Inicializar a aba padrão
         carregarPlanilhas();
-        
-        // --- FUNÇÕES DO MÓDULO DE ATA (RESTAURANDO PARA NÃO PERDER) ---
-        // (Copie aqui as funções de Ata que você já tinha: abrirProcesso, gerarAta, etc)
-        // Por brevidade, mantive a estrutura visual mas o script foca na Correção.
-        // Se precisar, eu colo o script completo da Ata novamente.
+
     </script>
 </body>
 </html>
